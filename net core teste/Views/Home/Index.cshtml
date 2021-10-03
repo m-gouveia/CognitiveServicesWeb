@@ -1,0 +1,92 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<h1>Enviar Arquivos</h1>
+
+<div class="jumbotron jumbotron-fluid" style="padding-top: 10px;">
+    <div class="container">
+        <div class="row">
+            <section>
+                <div class="form-group">
+                    <div class="col-md-10">
+                        <input id="idtext" type="file" name="arquivos" multiple />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-10">
+                        <input type="button" id="btnSend" value="Enviar" />
+                        <div id="loading" class="spinner-border spinner-border-sm" role="status" style="margin-left: 10px;">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                
+            </section>
+        </div>
+
+        <p>Texto convertido da imagem:</p>
+        <textarea id="textoDaImagem" style="width:100%; height:200px"></textarea>
+
+        <br />
+
+        <p>Palavrões encontrados:</p>
+        <textarea id="palavroes" style="width:100%; height:200px"></textarea>
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+<script>
+
+    $(document).ready(function () {
+
+        $('#loading').hide();
+
+        $("#btnSend").click(function () {
+
+            sendText($("#idtext"));
+        });
+    });
+
+    function sendText(fileInput) {
+
+        $('#loading').show();
+
+        if (fileInput == undefined || fileInput.length == 0) return;
+
+        var file = fileInput[0];
+
+        var valueFileInput = $(file).val();
+
+        if (valueFileInput == undefined || valueFileInput.trim().length == 0) return;
+
+        var formData = new FormData();
+        formData.append("image", file.files[0]);
+
+        $.ajax({
+            method: "POST",
+            url: "/Moderador/OCRText", // the URL of the controller action method
+            data: formData, //{ url: valueFileInput }, // optional data
+            contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+            processData: false, // NEEDED, DON'T OMIT THIS
+            success: function (result) {
+
+                $('#loading').hide();
+
+                var json = JSON.parse(result);
+
+                $("#textoDaImagem").text(json.TextoDaImagem);
+                $("#palavroes").text(json.Palavroes);
+            },
+            error: function (req, status, error) {
+
+                $('#loading').hide();
+
+                // do something with error
+            }
+        });
+    }
+
+</script>
+
